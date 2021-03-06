@@ -2,7 +2,7 @@ import config
 from repository import Repository
 
 import json
-from flask import Flask, request
+from flask import Flask, request, make_response, jsonify
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -28,7 +28,15 @@ def get_assignments():
         return "unexpected arguments in request", 400
     assignments = repository.get_assignments(student_id=student_id)
     assignments = [assign.toDict() for assign in assignments ]
-    return json.dumps(assignments), 200
+    d = {"assignments": assignments}
+    response = make_response(
+        jsonify(d), 200
+    )
+    response.headers["Content-Type"] = "application/json"
+    return response
+
+
+    # return json.dumps(d), 200
 
 
 # {
@@ -80,12 +88,16 @@ def set_mark():
     try:
         body = request.get_json()
     except BadRequest:
+        print('***')
         return "unexcepted request body", 400
     student_id = body.get('student_id')
     assignment_id = body.get('assignment_id')
     mark = body.get('mark')
 
+    print(body)
+
     if not student_id or not assignment_id or not mark:
+        print('*')
         return "unexpected request body", 400
     try:
         status = repository.set_mark(
@@ -94,6 +106,7 @@ def set_mark():
             mark=mark
         )
     except ValueError:
+        print('**')
         return "incorrect request params", 400
     except InvalidRequestError:
         return "inner error", 500
