@@ -116,7 +116,7 @@ def set_mark():
 def run_app():
     Session.configure(bind=engine)
     repository.set_session(Session=Session)
-    app.run(port='9001')
+    app.run()
 
 
 if __name__ == '__main__':
