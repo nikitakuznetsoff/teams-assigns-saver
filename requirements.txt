@@ -1,6 +1,0 @@
-Flask
-sqlalchemy
-Jinja2
-Werkzeug
-requests
-psycopg2
