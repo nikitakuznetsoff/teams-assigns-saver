@@ -1,4 +1,4 @@
-from models import Assignment, StudentAssignment
+from models import Assignment, Submission
 
 class Repository:
     def __init__(self):
@@ -7,7 +7,7 @@ class Repository:
     def set_session(self, Session):
         self.Session = Session
 
-    def push_assignments(self, assignments, students, class_id):
+    def push_assignments(self, assignments, class_id):
         session = self.Session()
         for assignment in assignments:
             result = self.sess.query(Assignment).filter(
@@ -16,21 +16,25 @@ class Repository:
             
             if result:
                 continue
-            
-            new_assignment = Assignment(
+            assignment_new = Assignment(
                 id = assignment['id'],
                 class_id = class_id,
-                expiration_time = assignment['expiration_time'],
-                context = assignment['context']
+                expiration_time = assignment['dueDateTime'],
+                context = assignment['displayName']
             )
-            session.add(new_assignment)
-
-            for student in students:
-                new_pair = StudentAssignment(
-                    student_id=student, 
-                    assignment_id=assignment['id']
+            session.add(assignment_new)
+            
+            if not assignment.get('submissions'):
+                continue
+            for submission in assignment['submissions']:
+                submission_new = Submission(
+                    id=submission['id'],
+                    student_id=submission['userId'], 
+                    assignment_id=assignment['id'],
+                    mark=0,
+                    status=False
                 )
-                session.add(new_pair)
+                session.add(submission_new)
         session.commit()
 
 
@@ -38,31 +42,34 @@ class Repository:
         result = []
         session = self.Session()
         assigments = session.query(Assignment).\
-            join(StudentAssignment, StudentAssignment.assignment_id == Assignment.id).\
-            filter(StudentAssignment.student_id == student_id).\
+            join(Submission, Submission.assignment_id == Assignment.id).\
+            filter(Submission.student_id == student_id).\
             all()
         return assigments          
       
     
     def set_mark(self, student_id, assignment_id, mark):
         session = self.Session()
-        assignment = session.query(StudentAssignment).\
-            filter(student_id == student_id, assignment_id == assignment_id).first()
+        submission = session.query(Submission).\
+            filter(
+                Submission.student_id == student_id, 
+                Submission.assignment_id == assignment_id
+            ).first()
         
-        if not assignment:
+        if not submission:
             raise ValueError()
 
-        assignment.mark = mark
-        assignment.stats = True
+        submission.mark = mark
+        submission.stats = True
         session.commit()
 
     
     def get_evaluated_unsync_assigns(self):
         session = self.Session()
-        assigments = session.query(StudentAssignment).\
-            jfilter(StudentAssignment.status == True).\
+        submissions = session.query(Submission).\
+            filter(Submission.status == True).\
             all()
-        for assign in assignments:
-            assign.status = False
+        for sub in submissions:
+            sub.status = False
         session.commit()
-        return assignments
+        return submissions

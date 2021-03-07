@@ -27,7 +27,10 @@ def get_assignments():
         student_id = request.args.get('student_id')
     except ValueError:
         return "unexpected arguments in request", 400
-    assignments = repository.get_assignments(student_id=student_id)
+    try:
+        assignments = repository.get_assignments(student_id=student_id)
+    except InvalidRequestError:
+
     assignments = [assign.toDict() for assign in assignments ]
     d = {"assignments": assignments}
     response = make_response(
@@ -37,29 +40,31 @@ def get_assignments():
     return response
 
 
-    # return json.dumps(d), 200
-
-
 # {
-#     assignments: [],
-#     students: [],
+#     assignments: {
+#       'id': assign['id'],
+#       'displayName': assign['displayName'],
+#       'dueDateTime': assign['dueDateTime'],
+#       'assignedDateTime': assign['assignedDateTime'],
+#       'status': assign['status'],
+#       'grading': assign['grading'],
+#       'submissions': []
+#     },
 #     class_id: []
 # }
-@app.route('/sync', methods=['POST'])
+@app.route('/sync_push', methods=['POST'])
 def push_assignments():
     try:
         body = request.get_json()
     except BadRequest:
         return "unexcepted request body", 400
     assignments = body.get('assignmets', None)
-    students = body.get('students', None)
     class_id = body.get('class_id', None)
 
-    if not assignments or not students or not class_id:
+    if not assignments or not class_id:
         return "unexcepted request body", 400
     try:
         repository.push_assignments(
-            student=students, 
             assignments=assignments, 
             class_id=class_id
         )
@@ -68,13 +73,16 @@ def push_assignments():
     return "success", 200
 
 
-@app.route('/getmarks', methods=['GET'])
-def get_marks():
-    # try:
-    #     student_id = request.args.get('class_id')
-    # except ValueError:
-    #     return "unexpected arguments in request", 400
-    assignments = repository.get_evaluated_unsync_assigns()
+@app.route('/sync_get', methods=['GET'])
+def get_evaluated_assigns():
+    try:
+        class_id = request.args.get('class_id')
+    except ValueError:
+        return "unexpected arguments in request", 400
+    try:
+        assignments = repository.get_evaluated_unsync_assigns()
+    except InvalidRequestError:
+        return "inner error", 500
     assignments = [assign.toDict() for assign in assignments]
     return json.dumps(assignments), 200
     
@@ -89,16 +97,12 @@ def set_mark():
     try:
         body = request.get_json()
     except BadRequest:
-        print('***')
         return "unexcepted request body", 400
     student_id = body.get('student_id')
     assignment_id = body.get('assignment_id')
     mark = body.get('mark')
 
-    print(body)
-
     if not student_id or not assignment_id or not mark:
-        print('*')
         return "unexpected request body", 400
     try:
         status = repository.set_mark(
@@ -107,7 +111,6 @@ def set_mark():
             mark=mark
         )
     except ValueError:
-        print('**')
         return "incorrect request params", 400
     except InvalidRequestError:
         return "inner error", 500
