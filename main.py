@@ -30,7 +30,7 @@ def get_assignments():
     try:
         assignments = repository.get_assignments(student_id=student_id)
     except InvalidRequestError:
-
+        return "internal error", 500
     assignments = [assign.toDict() for assign in assignments ]
     d = {"assignments": assignments}
     response = make_response(
@@ -69,7 +69,7 @@ def push_assignments():
             class_id=class_id
         )
     except InvalidRequestError:
-        return "inner error", 500
+        return "internal error", 500
     return "success", 200
 
 
@@ -82,7 +82,7 @@ def get_evaluated_assigns():
     try:
         assignments = repository.get_evaluated_unsync_assigns()
     except InvalidRequestError:
-        return "inner error", 500
+        return "internal error", 500
     assignments = [assign.toDict() for assign in assignments]
     return json.dumps(assignments), 200
     
@@ -113,7 +113,7 @@ def set_mark():
     except ValueError:
         return "incorrect request params", 400
     except InvalidRequestError:
-        return "inner error", 500
+        return "internal error", 500
     return "success", 200
 
 
