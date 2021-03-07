@@ -74,17 +74,17 @@ def push_assignments():
 
 
 @app.route('/sync_get', methods=['GET'])
-def get_evaluated_assigns():
+def get_evaluated_submissions():
     try:
         class_id = request.args.get('class_id')
     except ValueError:
         return "unexpected arguments in request", 400
     try:
-        assignments = repository.get_evaluated_unsync_assigns()
+        submissions = repository.get_evaluated_unsync_assigns()
     except InvalidRequestError:
         return "internal error", 500
-    assignments = [assign.toDict() for assign in assignments]
-    return json.dumps(assignments), 200
+    submissions = [sub.toDict() for sub in submissions]
+    return json.dumps({'submissions': submissions}), 200
     
 
 # {
