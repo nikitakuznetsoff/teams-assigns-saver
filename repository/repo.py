@@ -1,4 +1,5 @@
 from models import Assignment, Submission
+from sqlalchemy import true
 
 class Repository:
     def __init__(self):
@@ -10,8 +11,8 @@ class Repository:
     def push_assignments(self, assignments, class_id):
         session = self.Session()
         for assignment in assignments:
-            result = self.sess.query(Assignment).filter(
-                Assignemnt.id == assignment['id']
+            result = session.query(Assignment).filter(
+                Assignment.id == assignment['id']
             ).first()
             
             if result:
@@ -60,15 +61,14 @@ class Repository:
             raise ValueError()
 
         submission.mark = mark
-        submission.stats = True
+        submission.status = True
         session.commit()
 
     
     def get_evaluated_unsync_assigns(self):
         session = self.Session()
         submissions = session.query(Submission).\
-            filter(Submission.status == True).\
-            all()
+            filter(Submission.status.is_(True)).all()
         for sub in submissions:
             sub.status = False
         session.commit()

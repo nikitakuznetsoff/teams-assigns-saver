@@ -52,13 +52,13 @@ def get_assignments():
 #     },
 #     class_id: []
 # }
-@app.route('/sync_push', methods=['POST'])
+@app.route('/syncpush', methods=['POST'])
 def push_assignments():
     try:
         body = request.get_json()
     except BadRequest:
         return "unexcepted request body", 400
-    assignments = body.get('assignmets', None)
+    assignments = body.get('assignments', None)
     class_id = body.get('class_id', None)
 
     if not assignments or not class_id:
@@ -73,12 +73,12 @@ def push_assignments():
     return "success", 200
 
 
-@app.route('/sync_get', methods=['GET'])
+@app.route('/syncget', methods=['GET'])
 def get_evaluated_submissions():
-    try:
-        class_id = request.args.get('class_id')
-    except ValueError:
-        return "unexpected arguments in request", 400
+    # try:
+    #     class_id = request.args.get('class_id')
+    # except ValueError:
+    #     return "unexpected arguments in request", 400
     try:
         submissions = repository.get_evaluated_unsync_assigns()
     except InvalidRequestError:
@@ -88,7 +88,7 @@ def get_evaluated_submissions():
     
 
 # {
-#     student_id: str,
+#     student_id: str, 
 #     assignment_id: str,
 #     mark: int
 # }
