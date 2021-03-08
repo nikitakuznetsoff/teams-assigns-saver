@@ -84,7 +84,11 @@ def get_evaluated_submissions():
     except InvalidRequestError:
         return "internal error", 500
     submissions = [sub.toDict() for sub in submissions]
-    return json.dumps({'submissions': submissions}), 200
+    response = make_response(
+        jsonify(submissions), 200
+    )
+    response.headers["Content-Type"] = "application/json"
+    return response
     
 
 # {
@@ -118,4 +122,5 @@ def set_mark():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    # app.run(host='0.0.0.0')
+    app.run(port=5000)
