@@ -85,7 +85,7 @@ def get_evaluated_submissions():
         return "internal error", 500
     submissions = [sub.toDict() for sub in submissions]
     response = make_response(
-        jsonify(submissions), 200
+        jsonify({'submissions': submissions} ), 200
     )
     response.headers["Content-Type"] = "application/json"
     return response
