@@ -5,7 +5,10 @@
 # DB_PORT = 5432
 
 DB_NAME = "assigns"
-DB_USER = "nick"
+# DB_USER = "nick"
+DB_USER = "nikita"
 DB_PASS = "pass"
 DB_HOST = "localhost"
 DB_PORT = 5432
+
+BASE_URL = "http://localhost:5000"

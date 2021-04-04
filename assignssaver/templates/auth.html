@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>EdTab Authorization</title>
+        <script src="https://code.jquery.com/jquery-3.1.1.js" integrity="sha384-VC7EHu0lDzZyFfmjTPJq+DFyIn8TUGAJbEtpXquazFVr00Q/OOx//RjiZ9yU9+9m" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+    </head>
+    <body>
+        <div class="columns is-centered">
+            <div class="column is-half">
+                <section class="section has-text-centered">
+                    <p class="title is-2 has-text-centered">Welcome to Educational trainer!</p>
+                    <p class="subtitle is-5">
+                        Log in to your microsoft profile. 
+                        After that, you can start executing the assignment
+                    </p>
+                    <div class="field">
+                        <label class="label">Email</label>
+                        <div class="control">
+                          <input class="input" type="text" placeholder="Email">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <p class="control">
+                        <label class="label">Password</label>
+                          <input class="input" type="password" placeholder="Password">
+                        </p>
+                      </div>
+                      <div class="field">
+                        <form action="http://localhost:5000/lti/send">
+                            <input class="button is-success is-info" type="submit" value="Log in" />
+                        </form>
+
+                      </div>
+                </section>
+            </div>
+        </div>
+    </body>
+</html>

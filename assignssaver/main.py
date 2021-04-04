@@ -1,5 +1,7 @@
 import config
 from repository import Repository
+from lti import bg
+import db
 
 import json
 from flask import Flask, request, make_response, jsonify
@@ -10,16 +12,14 @@ from sqlalchemy.exc import InvalidRequestError
 from werkzeug.exceptions import BadRequest
 
 
-
-DSN = 'postgresql://{0}:{1}@{2}:{3}/{4}'.format(
-    config.DB_USER, config.DB_PASS, config.DB_HOST, config.DB_PORT, config.DB_NAME
-)
 app = Flask(__name__)
-engine = create_engine(DSN)
-Session = sessionmaker(engine)
+app.config['SECRET_KEY'] = 'secret'
+Session = db.get_session()
+
 repository = Repository()
 repository.set_session(Session=Session)
 
+app.register_blueprint(bg)
 
 @app.route('/get', methods=['GET'])
 def get_assignments():
@@ -39,9 +39,8 @@ def get_assignments():
     response.headers["Content-Type"] = "application/json"
     return response
 
-
 # {
-#     assignments: {
+#     assignments: [{
 #       'id': assign['id'],
 #       'displayName': assign['displayName'],
 #       'dueDateTime': assign['dueDateTime'],
@@ -49,19 +48,21 @@ def get_assignments():
 #       'status': assign['status'],
 #       'grading': assign['grading'],
 #       'submissions': []
-#     },
-#     class_id: []
+#     }],
+#     class_id: id
 # }
 @app.route('/syncpush', methods=['POST'])
 def push_assignments():
     try:
         body = request.get_json()
     except BadRequest:
+        print('bad request')
         return "unexcepted request body", 400
     assignments = body.get('assignments', None)
     class_id = body.get('class_id', None)
 
     if not assignments or not class_id:
+        print('unexcepted body')
         return "unexcepted request body", 400
     try:
         repository.push_assignments(
@@ -69,6 +70,7 @@ def push_assignments():
             class_id=class_id
         )
     except InvalidRequestError:
+        print('invalid request')
         return "internal error", 500
     return "success", 200
 
@@ -108,6 +110,10 @@ def set_mark():
 
     if not student_id or not assignment_id or not mark:
         return "unexpected request body", 400
+    
+    if assignment_id == 'moodle-assign':
+        r = requests.post('http://localhost:5000/lti/mark', param={'mark': mark})
+    
     try:
         status = repository.set_mark(
             student_id=student_id,
@@ -119,8 +125,3 @@ def set_mark():
     except InvalidRequestError:
         return "internal error", 500
     return "success", 200
-
-
-if __name__ == '__main__':
-    # app.run(host='0.0.0.0')
-    app.run(port=5000)

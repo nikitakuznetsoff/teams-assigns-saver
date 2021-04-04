@@ -68,7 +68,9 @@ class Repository:
     def get_evaluated_unsync_assigns(self):
         session = self.Session()
         submissions = session.query(Submission).\
-            filter(Submission.status.is_(True)).all()
+            filter(Submission.status.is_(True)).\
+            filter(Submission.assignment_id != 'moodle-subm').\
+            all()
         for sub in submissions:
             sub.status = False
         session.commit()
